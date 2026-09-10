@@ -6,9 +6,7 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/omni_TECNO-BF7.mk
+    $(LOCAL_DIR)/twrp_bf7.mk
 
 COMMON_LUNCH_CHOICES := \
-    omni_TECNO-BF7-user \
-    omni_TECNO-BF7-userdebug \
-    omni_TECNO-BF7-eng
+    twrp_bf7-eng
