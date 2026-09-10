@@ -1,36 +1,17 @@
 #!/bin/bash
-#
-# Copyright (C) 2016 The CyanogenMod Project
-# Copyright (C) 2017-2020 The LineageOS Project
-#
-# SPDX-License-Identifier: Apache-2.0
-#
-
 set -e
 
 DEVICE=bf7
 VENDOR=tecno
 
-# Load extract_utils and do some sanity checks
-MY_DIR="${BASH_SOURCE%/*}"
-if [[ ! -d "${MY_DIR}" ]]; then MY_DIR="${PWD}"; fi
+MY_DIR="$(cd "$(dirname "$0")" && pwd)"
+ANDROID_ROOT="$MY_DIR"/../../..
 
-ANDROID_ROOT="${MY_DIR}/../../.."
+HELPER="$ANDROID_ROOT"/vendor/twrp/build/tools/extract_utils.sh
+source "$HELPER"
 
-HELPER="${ANDROID_ROOT}/tools/extract-utils/extract_utils.sh"
-if [ ! -f "${HELPER}" ]; then
-    echo "Unable to find helper script at ${HELPER}"
-    exit 1
-fi
-source "${HELPER}"
-
-# Initialize the helper
-setup_vendor "${DEVICE}" "${VENDOR}" "${ANDROID_ROOT}"
-
-# Warning headers and guards
+# Generate vendor makefiles based on proprietary-files.txt
+setup_vendor "$DEVICE" "$VENDOR" "$ANDROID_ROOT" false
 write_headers
-
-write_makefiles "${MY_DIR}/proprietary-files.txt" true
-
-# Finish
+write_makefiles "$MY_DIR"/proprietary-files.txt true
 write_footers
