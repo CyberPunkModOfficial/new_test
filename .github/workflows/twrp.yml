@@ -1,0 +1,228 @@
+name: Build - TWRP
+
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'TWRP Minimal-Manifest Branch'
+        required: true
+        default: 'twrp-12.1'
+        type: choice
+        options:
+        - twrp-12.1
+        - twrp-11
+        - twrp-9.0
+        - twrp-8.1
+      DEVICE_TREE:
+        description: 'Custom Recovery Tree'
+        required: true
+        default: 'https://github.com/CyberPunkModOfficial/new_test/'
+      DEVICE_TREE_BRANCH:
+        description: 'Custom Recovery Tree Branch'
+        required: true
+        default: 'main'
+      DEVICE_PATH:
+        description: 'Specify your Device Path'
+        required: true
+        default: 'device/tecno/BF7'
+      DEVICE_NAME:
+        description: 'Specify your Device Codename'
+        required: true
+        default: 'BF7'
+      BUILD_TARGET:
+        description: 'Specify your Build Target'
+        required: true
+        default: 'boot'
+        type: choice
+        options:
+        - boot
+        - recovery
+        - vendorboot
+      LDCHECK:
+        description: 'Path of blobs to check'
+        required: true
+        default: 'system/bin/qseecomd'
+
+jobs:
+  build:
+    name: Build TWRP by ${{ github.actor }}
+    runs-on: ubuntu-24.04
+    if: github.event.repository.owner.id == github.event.sender.id
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+    steps:
+    - name: Check Out
+      uses: actions/checkout@v6
+
+    - name: Display Inputs
+      run: |
+        echo "Manifest Branch: ${{ github.event.inputs.MANIFEST_BRANCH }}"
+        echo "Device Tree: ${{ github.event.inputs.DEVICE_TREE }}"
+        echo "Device Branch: ${{ github.event.inputs.DEVICE_TREE_BRANCH }}"
+        echo "Device Path: ${{ github.event.inputs.DEVICE_PATH }}"
+        echo "Device Name: ${{ github.event.inputs.DEVICE_NAME }}"
+        echo "Build Target: ${{ github.event.inputs.BUILD_TARGET }}image"
+
+    - name: Cleanup
+      uses: rokibhasansagar/slimhub_actions@main
+
+    - name: Set Swap Space
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 24
+
+    - name: Prepare the environment
+      run: |
+        sudo apt update && sudo apt upgrade -y
+        DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
+            gperf gcc-multilib g++-multilib libc6-dev lib32ncurses-dev libx11-dev tree lib32z-dev libgl1-mesa-dev libxml2-utils \
+            xsltproc bc ccache liblz4-tool libncurses-dev libsdl1.2-dev build-essential libgtk-3-dev freeglut3-dev git lzop pngcrush schedtool squashfs-tools \
+            imagemagick libbz2-dev lzma ncftp qemu-user-static python3 tar
+      continue-on-error: true
+
+    - name: Install OpenJDK
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'zulu'
+        java-version: '8'
+
+    - name: Install Git-Repo
+      run: |
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
+      continue-on-error: true
+
+    - name: Check Manifest Branch
+      id: manifest
+      run: |
+         if [[ "${{ github.event.inputs.MANIFEST_BRANCH }}" == "twrp-11" || "${{ github.event.inputs.MANIFEST_BRANCH }}" == "twrp-12.1" ]]; then
+           echo "value=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git" >> "$GITHUB_OUTPUT"
+         else
+           echo "value=https://github.com/sounddrill31/platform_manifest_twrp_omni.git" >> "$GITHUB_OUTPUT"
+         fi
+      continue-on-error: true
+
+    - name: Initialize Repo
+      run: |
+        set -e
+        mkdir android-recovery
+        cd android-recovery
+        git config --global user.name "${{ github.actor }}"
+        git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+        repo init --depth=1 -u ${{ steps.manifest.outputs.value }} -b ${{ github.event.inputs.MANIFEST_BRANCH }}
+        sed -i '/<remove-project name="platform\/external\/gflags"  \/>/d' .repo/manifests/remove-minimal.xml
+      continue-on-error: false
+
+    - name: Repo Sync
+      run: |
+        set -e
+        cd android-recovery
+        repo sync -j$(nproc --all) --force-sync
+      continue-on-error: false
+
+    - name: Ensure vendor/twrp exists
+      run: |
+        set -e
+        cd android-recovery
+        if [ ! -f vendor/twrp/build/tools/extract_utils.sh ]; then
+          echo "vendor/twrp missing after repo sync — cloning it directly"
+          rm -rf vendor/twrp
+          mkdir -p vendor
+          git clone https://github.com/TeamWin/android_vendor_twrp -b android-12.1 vendor/twrp
+        else
+          echo "vendor/twrp already present, skipping"
+        fi
+      continue-on-error: true
+
+    - name: Debug vendor/twrp contents
+      run: |
+        cd android-recovery
+        echo "--- vendor/twrp top level ---"
+        ls -la vendor/twrp || echo "vendor/twrp does not exist"
+        echo "--- searching for extract_utils.sh anywhere under vendor/twrp ---"
+        find vendor/twrp -iname "extract_utils.sh" 2>/dev/null || echo "not found anywhere"
+      continue-on-error: true
+
+    - name: Clone Device Tree
+      run: |
+        set -e
+        cd android-recovery
+        git clone ${{ github.event.inputs.DEVICE_TREE }} -b ${{ github.event.inputs.DEVICE_TREE_BRANCH }} ./${{ github.event.inputs.DEVICE_PATH }}
+        cd ${{ github.event.inputs.DEVICE_PATH }}
+        echo "COMMIT_ID=$(git rev-parse HEAD)" >> $GITHUB_ENV
+      continue-on-error: true
+
+    - name: Extract Proprietary Files
+      run: |
+        set -e
+        cd android-recovery/${{ github.event.inputs.DEVICE_PATH }}
+        chmod +x extract-files.sh setup-makefiles.sh
+        ./extract-files.sh
+        ./setup-makefiles.sh
+      continue-on-error: true
+
+    - name: Check Build Makefile
+      run: |
+        set -e
+        cd android-recovery
+        if [ -f ${{ github.event.inputs.DEVICE_PATH }}/twrp_${{ github.event.inputs.DEVICE_NAME}}.mk ]; then
+            echo "DEVICE_MAKEFILE=twrp_bf7.mk" >> $GITHUB_ENV
+        elif [ -f ${{ github.event.inputs.DEVICE_PATH }}/omni_${{ github.event.inputs.DEVICE_NAME}}.mk ]; then
+            echo "DEVICE_MAKEFILE=omni_bf7" >> $GITHUB_ENV
+        else
+            echo "No recovery makefile file found!"
+            exit 1
+        fi
+      continue-on-error: true
+
+    - name: Building Image
+      run: |
+        set -e -o pipefail
+        cd android-recovery
+        source build/envsetup.sh
+        export ALLOW_MISSING_DEPENDENCIES=true
+        lunch twrp_bf7-eng
+        make clean
+        make ${{ github.event.inputs.BUILD_TARGET }}image -j$(nproc --all)
+        echo "Done building your ${{ github.event.inputs.BUILD_TARGET }}.img"
+      continue-on-error: true
+
+    - name: Set Build Date
+      run: |
+        echo "BUILD_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v3
+      with:
+        files: |
+          android-recovery/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/${{ github.event.inputs.BUILD_TARGET }}.img
+        name: Unofficial TWRP for ${{ github.event.inputs.DEVICE_NAME }} // ${{ env.BUILD_DATE }}
+        tag_name: ${{ github.run_id }}
+        body: |
+          Build: ${{ github.event.inputs.MANIFEST_BRANCH }}
+          Device: [Device Tree/Branch](${{ github.event.inputs.DEVICE_TREE }}/tree/${{ github.event.inputs.DEVICE_TREE_BRANCH }})
+          Commit: Most recent [commit](${{ github.event.inputs.DEVICE_TREE }}/commit/${{ env.COMMIT_ID }}) during building.
+      continue-on-error: true
+
+    - name: Run LDCheck
+      run: |
+        cd tools
+        mv -n libneeds ${GITHUB_WORKSPACE}/android-recovery/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/
+        mv -n ldcheck ${GITHUB_WORKSPACE}/android-recovery/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root/
+        cd ../android-recovery/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery/root
+        python3 ldcheck -p system/lib64:vendor/lib64:system/lib:vendor/lib -d ${{ github.event.inputs.LDCHECK }}
+        echo "Done checking missing dependencies. Review, and reconfigure your tree."
+      continue-on-error: true
+
+    - name: Send release info to Telegram
+      run: |
+        chmod +x .github/scripts/send_to_telegram.sh
+        .github/scripts/send_to_telegram.sh \
+        "${{ github.event.inputs.DEVICE_NAME }}" \
+        "${{ github.event.inputs.MANIFEST_BRANCH }}" \
+        "${{ env.BUILD_DATE }}" \
+        "${{ env.COMMIT_ID }}" \
