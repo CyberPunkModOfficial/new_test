@@ -1,4 +1,4 @@
-DEVICE_PATH := device/tecno/bf7
+DEVICE_PATH := device/tecno/BF7
 
 ALLOW_MISSING_DEPENDENCIES := true
 
