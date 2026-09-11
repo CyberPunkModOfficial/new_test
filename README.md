@@ -14,7 +14,5 @@
 - [✔] Poweroff
 - [✔] set brightness
 - [✔] vibrate
-- [?] screenshot
 - [✔] partition SD card
-- [ X ] Fastbootd
 ```
