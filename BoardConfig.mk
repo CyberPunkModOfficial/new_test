@@ -27,7 +27,9 @@ TARGET_NO_BOOTLOADER := true
 # Display
 TARGET_SCREEN_DENSITY := 320
 
+# Compression
 BOARD_RAMDISK_USE_GZIP := true
+GZIP_RAMDISK_TARGETS := boot,recovery
 
 # Kernel - prebuilt
 TARGET_FORCE_PREBUILT_KERNEL := true
@@ -83,6 +85,8 @@ TW_SCREEN_BLANK_ON_BOOT := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_USE_TOOLBOX := true
 TW_INCLUDE_REPACKTOOLS := true
+
+# Reduce size flags
 TW_EXCLUDE_NANO := true
 TW_EXCLUDE_APEX := true
 TW_EXCLUDE_TWRPAPP := true
