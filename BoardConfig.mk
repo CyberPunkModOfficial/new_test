@@ -27,10 +27,6 @@ TARGET_NO_BOOTLOADER := true
 # Display
 TARGET_SCREEN_DENSITY := 320
 
-# Compression
-BOARD_RAMDISK_USE_GZIP := true
-GZIP_RAMDISK_TARGETS := boot,recovery
-
 # Kernel - prebuilt
 TARGET_FORCE_PREBUILT_KERNEL := true
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
@@ -93,6 +89,10 @@ TW_INCLUDE_REPACKTOOLS := true
 
 # FIX FOR AUTOMATIC REBOOT TO RECOVERY
 TW_NO_FASTBOOT_BOOT := true
+
+# Decryption Flags
+TW_INCLUDE_CRYPTO := true
+TW_INCLUDE_CRYPTO_FBE := true
 
 # Reduce size flags
 TW_EXCLUDE_NANO := true
