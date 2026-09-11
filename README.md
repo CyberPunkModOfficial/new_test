@@ -2,8 +2,8 @@
 
 ![TWRP](https://explore-feed.github.com/topics/twrp/twrp.png)
 
-```
 # WORKING FEATURES AS OF NOW
+```
 - [✔] Working Touch, screen
 - [✔] Backup to MicroSD
 - [✔] Restore from MicroSD
