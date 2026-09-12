@@ -28,11 +28,3 @@ PRODUCT_PACKAGES += \
     update_engine \
     update_verifier \
     update_engine_sideload
-
-# 🔑 Decryption HALs
-PRODUCT_PACKAGES += \
-    android.hardware.gatekeeper@1.0-service \
-    android.hardware.keymaster@4.1-service \
-    vendor.mediatek.hardware.keymaster_attestation@1.1-service \
-    vendor.trustonic.tee@1.1-service \
-    vendor.trustonic.tee.tui@1.0-service
