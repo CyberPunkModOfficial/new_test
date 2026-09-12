@@ -101,3 +101,12 @@ TW_EXCLUDE_PYTHON := true
 TW_DEFAULT_LANGUAGE := en
 TW_EXTRA_LANGUAGES := false
 TW_EXCLUDE_SUPERSU := true
+
+# Remove bash shell support
+TW_EXCLUDE_BASH := true
+
+# Remove tzdata (timezone database)
+TW_EXCLUDE_TZDATA := true
+
+# Exclude haptics/vibration support
+TW_NO_HAPTICS := true
