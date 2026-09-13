@@ -10,12 +10,6 @@ on fs && property:ro.debuggable=0
 on early-init
     start logd
 
-on init
-    mkdir /vendor 0755 root root
-    exec u:r:vold:s0 -- /system/bin/vdc checkpoint restoreCheckpoint
-    wait /dev/block/mapper/vendor
-    mount ext4 /dev/block/mapper/vendor /vendor ro barrier=1
-
 on post-fs
     # Support A/B feature for emmc boot region
     symlink /dev/block/sda /dev/block/mmcblk0boot0
