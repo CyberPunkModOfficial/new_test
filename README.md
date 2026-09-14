@@ -15,7 +15,7 @@ Blocking checks
 Medium checks
 - [?] update.zip sideload
 - [?] UI colors (red/blue inversions)
-- [] Screen goes off and on
+- [✔] Screen goes off and on
 - [?] F2FS/EXT4 Support, exFAT/NTFS where supported
 - [✔] all important partitions listed in mount/backup lists
 - [?] backup/restore to/from external (USB-OTG) storage (not supported by the device)
