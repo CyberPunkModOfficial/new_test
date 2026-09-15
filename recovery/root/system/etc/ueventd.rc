@@ -1,5 +1,6 @@
-import /vendor/etc/ueventd.rc
+import /vendor/etc/uneventd.rc
 import /odm/etc/ueventd.rc
+import /ueventd.mt6761.rc
 
 firmware_directories /etc/firmware/ /odm/firmware/ /vendor/firmware/ /firmware/image/
 uevent_socket_rcvbuf_size 16M
