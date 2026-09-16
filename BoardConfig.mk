@@ -99,7 +99,6 @@ BOARD_ROOT_EXTRA_FOLDERS += metadata
 
 # Decryption 
 TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_CRYPTO_FBE := true
 # Reduce size flags
 TW_EXCLUDE_NANO := true
 TW_EXCLUDE_APEX := true
