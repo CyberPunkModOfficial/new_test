@@ -103,10 +103,6 @@ BOARD_ROOT_EXTRA_FOLDERS += metadata
 
 # Decryption 
 TW_INCLUDE_CRYPTO := true
-TW_INCLUDE_CRYPTO_FBE := true
-TW_INCLUDE_FBE_METADATA_DECRYPT := true
-TW_CRYPTO_FBE_KEYMASTER_VERSION := 4
-TARGET_TEE := trustonic
 
 # Reduce size flags
 TW_EXCLUDE_NANO := true
