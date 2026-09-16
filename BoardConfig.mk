@@ -88,7 +88,6 @@ TW_SCREEN_BLANK_ON_BOOT := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_USE_TOOLBOX := true
 TW_INCLUDE_LIBRESETPROP := true
-TW_OEM_BUILD := true
 
 
 # FIX FOR AUTOMATIC REBOOT TO RECOVERY
@@ -100,7 +99,7 @@ BOARD_ROOT_EXTRA_FOLDERS += metadata
 
 # Decryption 
 TW_INCLUDE_CRYPTO := true
-
+TW_INCLUDE_CRYPTO_FBE := true
 # Reduce size flags
 TW_EXCLUDE_NANO := true
 TW_EXCLUDE_APEX := true
