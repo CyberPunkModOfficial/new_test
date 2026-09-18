@@ -54,7 +54,6 @@ service mobicore /vendor/bin/mcDriverDaemon --sfs-reformat --P1 /mnt/vendor/pers
     user system
     group system  
     class core
-    priority -20
     seclabel u:r:recovery:s0
     disabled
 
