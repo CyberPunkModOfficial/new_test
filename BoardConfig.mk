@@ -114,6 +114,8 @@ TW_NO_CPU_TEMP := true
 TW_NO_EXFAT := true
 TW_NO_EXFAT_FUSE := true
 TW_EXCLUDE_DOWNLOAD_MODE := true
+TW_EXCLUDE_MTP := true
+TW_NO_SCREEN_TIMEOUT := true
 
 # Remove bash shell support
 TW_EXCLUDE_BASH := true
